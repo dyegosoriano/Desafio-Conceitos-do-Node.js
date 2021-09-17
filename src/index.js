@@ -40,10 +40,30 @@ app.post('/users', (request, response) => {
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
   // Complete aqui
+  const { username } = request.headers;
+  const user = users.find(user => user.username === username);
+
+  return response.status(200).json(user.todos);
 });
 
 app.post('/todos', checksExistsUserAccount, (request, response) => {
   // Complete aqui
+  const { title, deadline } = request.body;
+  const { username } = request.headers;
+
+  const newPost = {
+    created_at: new Date(),
+    id: uuidv4(),
+    done: false,
+    deadline,
+    title
+  };
+
+  users.forEach(user => {
+    if (user.username === username) user.todos.push(newPost);
+  });
+
+  return response.status(201).json(newPost);
 });
 
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
