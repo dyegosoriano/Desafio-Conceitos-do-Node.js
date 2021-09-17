@@ -13,8 +13,10 @@ const users = [];
 function checksExistsUserAccount(request, response, next) {
   const { username } = request.headers;
 
-  const userAlreadyExist = users.some(user => user.username === username);
+  const userAlreadyExist = users.find(user => user.username === username);
   if (!userAlreadyExist) return response.status(400).json({ error: 'User does not  already exist!' });
+
+  request.user = userAlreadyExist;
 
   next();
 }
@@ -39,17 +41,14 @@ app.post('/users', (request, response) => {
 });
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
-  const { username } = request.headers;
-  const user = users.find(user => user.username === username);
+  const { user } = request;
 
   return response.status(200).json(user.todos);
 });
 
 app.post('/todos', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
   const { title, deadline } = request.body;
-  const { username } = request.headers;
+  const { user } = request;
 
   const newPost = {
     created_at: new Date(),
@@ -59,9 +58,7 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
     title
   };
 
-  users.forEach(user => {
-    if (user.username === username) user.todos.push(newPost);
-  });
+  user.todos.push(newPost);
 
   return response.status(201).json(newPost);
 });
